@@ -15,10 +15,21 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(freenect2 REQUIRED)
+
+add_executable(kinect2 "bin/kinect2.cpp")
+
+ament_target_dependencies(kinect2
+  freenect2)
+
+install(TARGETS kinect2
+  DESTINATION "lib/${PROJECT_NAME}")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+ament_export_dependencies(freenect2)
 
 ament_package()
