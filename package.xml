@@ -3,7 +3,7 @@
 <package format="3">
   <name>kinect2</name>
   <version>0.1.0</version>
-  <description>Tools for using Kinect v2 in ROS 2</description>
+  <description>Tools for using Kinect V2 in ROS 2</description>
   <maintainer email="alfi.maulana.f@gmail.com">Alfi Maulana</maintainer>
   <license>MIT License</license>
   <url>https://github.com/threeal/ros2_kinect2</url>
