@@ -1,6 +1,6 @@
-# ROS 2 Kinect v2
+# ROS 2 Kinect V2
 
-This project contains tools for using [Kinect v2](https://en.wikipedia.org/wiki/Kinect) in [ROS 2](https://ros.org/).
+This project contains tools for using [Kinect V2](https://en.wikipedia.org/wiki/Kinect) in [ROS 2](https://ros.org/).
 
 ## License
 
