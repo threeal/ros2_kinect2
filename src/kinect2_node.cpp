@@ -29,7 +29,8 @@ namespace kinect2
 
 Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
 : rclcpp::Node("kinect2", options),
-  listener(libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth)
+  SyncMultiFrameListener(
+    libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth)
 {
   // Check available devices
   if (freenect2.enumerateDevices() <= 0) {
@@ -39,8 +40,8 @@ Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
   pipeline = new libfreenect2::CpuPacketPipeline();
   device = freenect2.openDevice(freenect2.getDefaultDeviceSerialNumber(), pipeline);
 
-  device->setColorFrameListener(&listener);
-  device->setIrAndDepthFrameListener(&listener);
+  device->setColorFrameListener(this);
+  device->setIrAndDepthFrameListener(this);
 
   // Trying to start the device
   if (!device->start()) {
@@ -52,24 +53,6 @@ Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
 
   // Initialize publisher
   rgb_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/rgb_image", 10);
-
-  // Initialize capture timer
-  capture_timer = create_wall_timer(
-    1ms, [this]() {
-      if (!listener.waitForNewFrame(frames, 3 * 1000)) {
-        RCLCPP_WARN(get_logger(), "Timeout waiting for new frames!");
-        return;
-      }
-
-      RCLCPP_DEBUG(get_logger(), "Received new frames!");
-
-      auto rgb_image = frame_to_image(
-        frames[libfreenect2::Frame::Color], sensor_msgs::image_encodings::BGRA8);
-
-      rgb_image_publisher->publish(*rgb_image);
-
-      listener.release(frames);
-    });
 }
 
 Kinect2Node::~Kinect2Node()
@@ -79,6 +62,18 @@ Kinect2Node::~Kinect2Node()
     device->stop();
     device->close();
   }
+}
+
+bool Kinect2Node::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * frame)
+{
+  RCLCPP_DEBUG(get_logger(), "Received new frames!");
+
+  if (type == libfreenect2::Frame::Color) {
+    auto rgb_image = frame_to_image(frame, sensor_msgs::image_encodings::BGRA8);
+    rgb_image_publisher->publish(*rgb_image);
+  }
+
+  return false;
 }
 
 }  // namespace kinect2

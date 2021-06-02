@@ -29,11 +29,13 @@
 namespace kinect2
 {
 
-class Kinect2Node : public rclcpp::Node
+class Kinect2Node : public rclcpp::Node, public libfreenect2::SyncMultiFrameListener
 {
 public:
   explicit Kinect2Node(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
   ~Kinect2Node();
+
+  bool onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * frame);
 
 private:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr rgb_image_publisher;
@@ -42,11 +44,6 @@ private:
 
   libfreenect2::PacketPipeline * pipeline;
   libfreenect2::Freenect2Device * device;
-
-  libfreenect2::SyncMultiFrameListener listener;
-  libfreenect2::FrameMap frames;
-
-  rclcpp::TimerBase::SharedPtr capture_timer;
 };
 
 }  // namespace kinect2
