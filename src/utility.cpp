@@ -18,37 +18,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef KINECT2__KINECT2_NODE_HPP_
-#define KINECT2__KINECT2_NODE_HPP_
+#include <kinect2/utility.hpp>
 
-#include <libfreenect2/libfreenect2.hpp>
-#include <libfreenect2/frame_listener_impl.h>
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/image.hpp>
+#include <memory>
+#include <string>
 
 namespace kinect2
 {
 
-class Kinect2Node : public rclcpp::Node
+std::shared_ptr<sensor_msgs::msg::Image> frame_to_image(
+  libfreenect2::Frame * frame, const std::string encoding)
 {
-public:
-  explicit Kinect2Node(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
-  ~Kinect2Node();
+  auto image = std::make_shared<sensor_msgs::msg::Image>();
 
-private:
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr rgb_image_publisher;
+  image->height = frame->height;
+  image->width = frame->width;
 
-  libfreenect2::Freenect2 freenect2;
+  image->encoding = encoding;
+  image->step = frame->width * frame->bytes_per_pixel;
 
-  libfreenect2::PacketPipeline * pipeline;
-  libfreenect2::Freenect2Device * device;
+  // Copy image data
+  image->data.resize(image->step * image->height);
+  std::copy_n(frame->data, image->step * image->height, image->data.begin());
 
-  libfreenect2::SyncMultiFrameListener listener;
-  libfreenect2::FrameMap frames;
-
-  rclcpp::TimerBase::SharedPtr capture_timer;
-};
+  return image;
+}
 
 }  // namespace kinect2
-
-#endif  // KINECT2__KINECT2_NODE_HPP_

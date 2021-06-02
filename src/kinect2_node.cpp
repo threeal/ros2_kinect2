@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include <kinect2/kinect2_node.hpp>
+#include <kinect2/utility.hpp>
 #include <sensor_msgs/image_encodings.hpp>
 
 using namespace std::chrono_literals;
@@ -62,20 +63,10 @@ Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
 
       RCLCPP_DEBUG(get_logger(), "Received new frames!");
 
-      auto frame = frames[libfreenect2::Frame::Color];
+      auto rgb_image = frame_to_image(
+        frames[libfreenect2::Frame::Color], sensor_msgs::image_encodings::BGRA8);
 
-      auto image = std::make_shared<sensor_msgs::msg::Image>();
-
-      image->height = frame->height;
-      image->width = frame->width;
-
-      image->encoding = sensor_msgs::image_encodings::BGRA8;
-      image->step = frame->width * frame->bytes_per_pixel;
-
-      image->data.resize(image->step * image->height);
-      std::copy_n(frame->data, image->step * image->height, image->data.begin());
-
-      rgb_image_publisher->publish(*image);
+      rgb_image_publisher->publish(*rgb_image);
 
       listener.release(frames);
     });

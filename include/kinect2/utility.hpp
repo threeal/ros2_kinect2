@@ -18,37 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef KINECT2__KINECT2_NODE_HPP_
-#define KINECT2__KINECT2_NODE_HPP_
+#ifndef KINECT2__UTILITY_HPP_
+#define KINECT2__UTILITY_HPP_
 
-#include <libfreenect2/libfreenect2.hpp>
-#include <libfreenect2/frame_listener_impl.h>
-#include <rclcpp/rclcpp.hpp>
+#include <libfreenect2/frame_listener.hpp>
 #include <sensor_msgs/msg/image.hpp>
+
+#include <memory>
+#include <string>
 
 namespace kinect2
 {
 
-class Kinect2Node : public rclcpp::Node
-{
-public:
-  explicit Kinect2Node(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
-  ~Kinect2Node();
-
-private:
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr rgb_image_publisher;
-
-  libfreenect2::Freenect2 freenect2;
-
-  libfreenect2::PacketPipeline * pipeline;
-  libfreenect2::Freenect2Device * device;
-
-  libfreenect2::SyncMultiFrameListener listener;
-  libfreenect2::FrameMap frames;
-
-  rclcpp::TimerBase::SharedPtr capture_timer;
-};
+std::shared_ptr<sensor_msgs::msg::Image> frame_to_image(
+  libfreenect2::Frame * frame, const std::string encoding);
 
 }  // namespace kinect2
 
-#endif  // KINECT2__KINECT2_NODE_HPP_
+#endif  // KINECT2__UTILITY_HPP_
