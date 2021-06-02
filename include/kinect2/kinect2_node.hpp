@@ -39,6 +39,7 @@ public:
 
 private:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr rgb_image_publisher;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr depth_image_publisher;
 
   libfreenect2::Freenect2 freenect2;
 

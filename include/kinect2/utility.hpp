@@ -30,8 +30,9 @@
 namespace kinect2
 {
 
-std::shared_ptr<sensor_msgs::msg::Image> frame_to_image(
-  libfreenect2::Frame * frame, const std::string encoding);
+std::shared_ptr<sensor_msgs::msg::Image> frame_info_to_image(libfreenect2::Frame * frame);
+std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(libfreenect2::Frame * frame);
+std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(libfreenect2::Frame * frame);
 
 }  // namespace kinect2
 

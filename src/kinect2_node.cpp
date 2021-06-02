@@ -20,7 +20,6 @@
 
 #include <kinect2/kinect2_node.hpp>
 #include <kinect2/utility.hpp>
-#include <sensor_msgs/image_encodings.hpp>
 
 using namespace std::chrono_literals;
 
@@ -30,7 +29,7 @@ namespace kinect2
 Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
 : rclcpp::Node("kinect2", options),
   SyncMultiFrameListener(
-    libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth)
+    libfreenect2::Frame::Color | libfreenect2::Frame::Ir)
 {
   // Check available devices
   if (freenect2.enumerateDevices() <= 0) {
@@ -51,8 +50,9 @@ Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
   RCLCPP_INFO_STREAM(get_logger(), "Device serial: " << device->getSerialNumber());
   RCLCPP_INFO_STREAM(get_logger(), "Device firmware: " << device->getFirmwareVersion());
 
-  // Initialize publisher
+  // Initialize publishers
   rgb_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/rgb_image", 10);
+  depth_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/depth_image", 10);
 }
 
 Kinect2Node::~Kinect2Node()
@@ -68,9 +68,21 @@ bool Kinect2Node::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame
 {
   RCLCPP_DEBUG(get_logger(), "Received new frames!");
 
-  if (type == libfreenect2::Frame::Color) {
-    auto rgb_image = frame_to_image(frame, sensor_msgs::image_encodings::BGRA8);
-    rgb_image_publisher->publish(*rgb_image);
+  switch (type) {
+    case libfreenect2::Frame::Color: {
+        auto color_image = rgb_frame_to_image(frame);
+        rgb_image_publisher->publish(*color_image);
+        break;
+      }
+
+    case libfreenect2::Frame::Ir: {
+        auto ir_image = ir_frame_to_image(frame);
+        depth_image_publisher->publish(*ir_image);
+        break;
+      }
+
+    default:
+      break;
   }
 
   return false;

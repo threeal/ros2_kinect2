@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include <kinect2/utility.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 
 #include <memory>
 #include <string>
@@ -26,20 +27,45 @@
 namespace kinect2
 {
 
-std::shared_ptr<sensor_msgs::msg::Image> frame_to_image(
-  libfreenect2::Frame * frame, const std::string encoding)
+std::shared_ptr<sensor_msgs::msg::Image> frame_info_to_image(libfreenect2::Frame * frame)
 {
   auto image = std::make_shared<sensor_msgs::msg::Image>();
 
   image->height = frame->height;
   image->width = frame->width;
 
-  image->encoding = encoding;
+  return image;
+}
+
+std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(libfreenect2::Frame * frame)
+{
+  auto image = frame_info_to_image(frame);
+
+  image->encoding = sensor_msgs::image_encodings::BGRA8;
   image->step = frame->width * frame->bytes_per_pixel;
 
   // Copy image data
   image->data.resize(image->step * image->height);
   std::copy_n(frame->data, image->step * image->height, image->data.begin());
+
+  return image;
+}
+
+std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(libfreenect2::Frame * frame)
+{
+  auto image = frame_info_to_image(frame);
+
+  image->encoding = sensor_msgs::image_encodings::MONO8;
+  image->step = frame->width;
+
+  // convert 4 bytes pixel into 1 byte pixel
+  image->data.resize(image->step * image->height);
+  for (size_t i = 0; i < image->data.size(); ++i) {
+    auto step = i * frame->bytes_per_pixel;
+
+    uint32_t * value = reinterpret_cast<uint32_t *>(frame->data + step);
+    image->data[i] = (*value / (1024 * 512));
+  }
 
   return image;
 }
