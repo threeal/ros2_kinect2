@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include <kinect2/kinect2_node.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 
 using namespace std::chrono_literals;
 
@@ -48,6 +49,9 @@ Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
   RCLCPP_INFO_STREAM(get_logger(), "Device serial: " << device->getSerialNumber());
   RCLCPP_INFO_STREAM(get_logger(), "Device firmware: " << device->getFirmwareVersion());
 
+  // Initialize publisher
+  rgb_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/rgb_image", 10);
+
   // Initialize capture timer
   capture_timer = create_wall_timer(
     1ms, [this]() {
@@ -57,6 +61,21 @@ Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
       }
 
       RCLCPP_DEBUG(get_logger(), "Received new frames!");
+
+      auto frame = frames[libfreenect2::Frame::Color];
+
+      auto image = std::make_shared<sensor_msgs::msg::Image>();
+
+      image->height = frame->height;
+      image->width = frame->width;
+
+      image->encoding = sensor_msgs::image_encodings::BGRA8;
+      image->step = frame->width * frame->bytes_per_pixel;
+
+      image->data.resize(image->step * image->height);
+      std::copy_n(frame->data, image->step * image->height, image->data.begin());
+
+      rgb_image_publisher->publish(*image);
 
       listener.release(frames);
     });

@@ -17,6 +17,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(freenect2 REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 install(DIRECTORY "include" DESTINATION ".")
 
@@ -28,7 +29,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>)
 
 ament_target_dependencies(${PROJECT_NAME}
-  freenect2 rclcpp)
+  freenect2 rclcpp sensor_msgs)
 
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
@@ -54,6 +55,6 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_export_dependencies(freenect2 rclcpp)
+ament_export_dependencies(freenect2 rclcpp sensor_msgs)
 
 ament_package()

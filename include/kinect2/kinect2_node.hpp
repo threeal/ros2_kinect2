@@ -24,6 +24,7 @@
 #include <libfreenect2/libfreenect2.hpp>
 #include <libfreenect2/frame_listener_impl.h>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 namespace kinect2
 {
@@ -35,6 +36,8 @@ public:
   ~Kinect2Node();
 
 private:
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr rgb_image_publisher;
+
   libfreenect2::Freenect2 freenect2;
 
   libfreenect2::PacketPipeline * pipeline;
