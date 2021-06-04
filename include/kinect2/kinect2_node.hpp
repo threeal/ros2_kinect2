@@ -32,7 +32,17 @@ namespace kinect2
 class Kinect2Node : public rclcpp::Node, public libfreenect2::SyncMultiFrameListener
 {
 public:
-  explicit Kinect2Node(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  struct Options : public rclcpp::NodeOptions
+  {
+    Options();
+
+    unsigned int get_frame_types() const;
+
+    bool enable_rgb;
+    bool enable_depth;
+  };
+
+  explicit Kinect2Node(const Options & options = Options());
   ~Kinect2Node();
 
   bool onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * frame);

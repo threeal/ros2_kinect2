@@ -26,10 +26,30 @@ using namespace std::chrono_literals;
 namespace kinect2
 {
 
-Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
+Kinect2Node::Options::Options()
+: enable_rgb(false),
+  enable_depth(false)
+{
+}
+
+unsigned int Kinect2Node::Options::get_frame_types() const
+{
+  unsigned int frame_types = 0;
+
+  if (enable_rgb) {
+    frame_types |= libfreenect2::Frame::Color;
+  }
+
+  if (enable_depth) {
+    frame_types |= libfreenect2::Frame::Ir;
+  }
+
+  return frame_types;
+}
+
+Kinect2Node::Kinect2Node(const Kinect2Node::Options & options)
 : rclcpp::Node("kinect2", options),
-  SyncMultiFrameListener(
-    libfreenect2::Frame::Color | libfreenect2::Frame::Ir)
+  SyncMultiFrameListener(options.get_frame_types())
 {
   // Check available devices
   if (freenect2.enumerateDevices() <= 0) {
@@ -50,9 +70,14 @@ Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
   RCLCPP_INFO_STREAM(get_logger(), "Device serial: " << device->getSerialNumber());
   RCLCPP_INFO_STREAM(get_logger(), "Device firmware: " << device->getFirmwareVersion());
 
-  // Initialize publishers
-  rgb_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/image_raw", 10);
-  depth_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/depth/image_raw", 10);
+  if (options.enable_rgb) {
+    rgb_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/image_raw", 10);
+  }
+
+  if (options.enable_depth) {
+    depth_image_publisher = create_publisher<sensor_msgs::msg::Image>(
+      "/kinect2/depth/image_raw", 10);
+  }
 }
 
 Kinect2Node::~Kinect2Node()
@@ -70,14 +95,20 @@ bool Kinect2Node::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame
 
   switch (type) {
     case libfreenect2::Frame::Color: {
-        auto color_image = rgb_frame_to_image(frame);
-        rgb_image_publisher->publish(*color_image);
+        if (rgb_image_publisher) {
+          auto color_image = rgb_frame_to_image(frame);
+          rgb_image_publisher->publish(*color_image);
+        }
+
         break;
       }
 
     case libfreenect2::Frame::Ir: {
-        auto ir_image = ir_frame_to_image(frame);
-        depth_image_publisher->publish(*ir_image);
+        if (depth_image_publisher) {
+          auto ir_image = ir_frame_to_image(frame);
+          depth_image_publisher->publish(*ir_image);
+        }
+
         break;
       }
 
