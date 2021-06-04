@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef KINECT2__KINECT2_NODE_HPP_
-#define KINECT2__KINECT2_NODE_HPP_
+#ifndef KINECT2__KINECT2_HPP_
+#define KINECT2__KINECT2_HPP_
 
 #include <libfreenect2/libfreenect2.hpp>
 #include <libfreenect2/frame_listener_impl.h>
@@ -29,11 +29,21 @@
 namespace kinect2
 {
 
-class Kinect2Node : public rclcpp::Node, public libfreenect2::SyncMultiFrameListener
+class Kinect2 : public rclcpp::Node, public libfreenect2::SyncMultiFrameListener
 {
 public:
-  explicit Kinect2Node(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
-  ~Kinect2Node();
+  struct Options : public rclcpp::NodeOptions
+  {
+    Options();
+
+    unsigned int get_frame_types() const;
+
+    bool enable_rgb;
+    bool enable_depth;
+  };
+
+  explicit Kinect2(const Options & options = Options());
+  ~Kinect2();
 
   bool onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * frame);
 
@@ -49,4 +59,4 @@ private:
 
 }  // namespace kinect2
 
-#endif  // KINECT2__KINECT2_NODE_HPP_
+#endif  // KINECT2__KINECT2_HPP_

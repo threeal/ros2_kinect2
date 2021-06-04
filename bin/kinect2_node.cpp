@@ -18,17 +18,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <argparse/argparse.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <kinect2/kinect2_node.hpp>
+#include <kinect2/kinect2.hpp>
 
 #include <memory>
 
 int main(int argc, char ** argv)
 {
+  auto program = argparse::ArgumentParser("kinect2_node", "0.1.0");
+
+  program.add_argument("--disable-rgb")
+  .help("disable RGB image capture and publication")
+  .default_value(false)
+  .implicit_value(true);
+
+  program.add_argument("--disable-depth")
+  .help("disable depth image capture and publication")
+  .default_value(false)
+  .implicit_value(true);
+
+  kinect2::Kinect2::Options kinect2_options;
+
+  // Try to parse arguments
+  try {
+    program.parse_args(argc, argv);
+
+    kinect2_options.enable_rgb = !program.get<bool>("--disable-rgb");
+    kinect2_options.enable_depth = !program.get<bool>("--disable-depth");
+  } catch (const std::exception & e) {
+    std::cout << e.what() << std::endl;
+    std::cout << program;
+    return 1;
+  }
+
   rclcpp::init(argc, argv);
 
+  // Try to start the Kinect V2
   try {
-    auto kinect2_node = std::make_shared<kinect2::Kinect2Node>();
+    auto kinect2_node = std::make_shared<kinect2::Kinect2>(kinect2_options);
     rclcpp::spin(kinect2_node);
   } catch (const std::exception & e) {
     std::cout << "Failed to initialize kinect2_node: " << e.what() << std::endl;
