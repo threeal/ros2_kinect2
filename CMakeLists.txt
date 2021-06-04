@@ -23,7 +23,7 @@ find_package(sensor_msgs REQUIRED)
 install(DIRECTORY "include" DESTINATION ".")
 
 add_library(${PROJECT_NAME}
-  "src/kinect2_node.cpp"
+  "src/kinect2.cpp"
   "src/utility.cpp")
 
 target_include_directories(${PROJECT_NAME} PUBLIC

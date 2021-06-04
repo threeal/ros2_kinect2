@@ -20,7 +20,7 @@
 
 #include <argparse/argparse.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <kinect2/kinect2_node.hpp>
+#include <kinect2/kinect2.hpp>
 
 #include <memory>
 
@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
   .default_value(false)
   .implicit_value(true);
 
-  kinect2::Kinect2Node::Options kinect2_options;
+  kinect2::Kinect2::Options kinect2_options;
 
   // Try to parse arguments
   try {
@@ -56,7 +56,7 @@ int main(int argc, char ** argv)
 
   // Try to start the Kinect V2
   try {
-    auto kinect2_node = std::make_shared<kinect2::Kinect2Node>(kinect2_options);
+    auto kinect2_node = std::make_shared<kinect2::Kinect2>(kinect2_options);
     rclcpp::spin(kinect2_node);
   } catch (const std::exception & e) {
     std::cout << "Failed to initialize kinect2_node: " << e.what() << std::endl;

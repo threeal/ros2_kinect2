@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <kinect2/kinect2_node.hpp>
+#include <kinect2/kinect2.hpp>
 #include <kinect2/utility.hpp>
 
 using namespace std::chrono_literals;
@@ -26,13 +26,13 @@ using namespace std::chrono_literals;
 namespace kinect2
 {
 
-Kinect2Node::Options::Options()
+Kinect2::Options::Options()
 : enable_rgb(false),
   enable_depth(false)
 {
 }
 
-unsigned int Kinect2Node::Options::get_frame_types() const
+unsigned int Kinect2::Options::get_frame_types() const
 {
   unsigned int frame_types = 0;
 
@@ -47,7 +47,7 @@ unsigned int Kinect2Node::Options::get_frame_types() const
   return frame_types;
 }
 
-Kinect2Node::Kinect2Node(const Kinect2Node::Options & options)
+Kinect2::Kinect2(const Kinect2::Options & options)
 : rclcpp::Node("kinect2", options),
   SyncMultiFrameListener(options.get_frame_types())
 {
@@ -80,7 +80,7 @@ Kinect2Node::Kinect2Node(const Kinect2Node::Options & options)
   }
 }
 
-Kinect2Node::~Kinect2Node()
+Kinect2::~Kinect2()
 {
   // Stop and close the device
   if (device) {
@@ -89,7 +89,7 @@ Kinect2Node::~Kinect2Node()
   }
 }
 
-bool Kinect2Node::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * frame)
+bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * frame)
 {
   RCLCPP_DEBUG(get_logger(), "Received new frames!");
 
