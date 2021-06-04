@@ -51,8 +51,8 @@ Kinect2Node::Kinect2Node(const rclcpp::NodeOptions & options)
   RCLCPP_INFO_STREAM(get_logger(), "Device firmware: " << device->getFirmwareVersion());
 
   // Initialize publishers
-  rgb_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/rgb_image", 10);
-  depth_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/depth_image", 10);
+  rgb_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/image_raw", 10);
+  depth_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/depth/image_raw", 10);
 }
 
 Kinect2Node::~Kinect2Node()
