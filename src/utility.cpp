@@ -56,6 +56,17 @@ std::shared_ptr<sensor_msgs::msg::Image> mat_to_image(cv::Mat mat)
   return image;
 }
 
+cv::Mat crop_mat(cv::Mat mat, const int & width, const int & height)
+{
+  cv::Rect roi;
+  roi.x = (mat.cols - width) / 2;
+  roi.y = (mat.rows - height) / 2;
+  roi.width = width;
+  roi.height = height;
+
+  return mat(roi);
+}
+
 cv::Mat resize_mat(cv::Mat mat, int width, int height)
 {
   if (width <= 0 && height <= 0) {
@@ -68,6 +79,13 @@ cv::Mat resize_mat(cv::Mat mat, int width, int height)
 
   if (height <= 0) {
     height = (mat.rows * width) / mat.cols;
+  }
+
+  // Crop image to keep the aspect ratio
+  if (static_cast<double>(width) / height < static_cast<double>(mat.cols) / mat.rows) {
+    mat = crop_mat(mat, (width * mat.rows) / height, mat.rows);
+  } else {
+    mat = crop_mat(mat, mat.cols, (height * mat.cols) / width);
   }
 
   cv::resize(mat, mat, cv::Size(width, height));

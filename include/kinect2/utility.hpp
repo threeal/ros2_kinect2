@@ -34,6 +34,7 @@ namespace kinect2
 cv::Mat frame_to_mat(libfreenect2::Frame * frame, const int & type = CV_8UC3);
 std::shared_ptr<sensor_msgs::msg::Image> mat_to_image(cv::Mat mat);
 
+cv::Mat crop_mat(cv::Mat mat, const int & width, const int & height);
 cv::Mat resize_mat(cv::Mat mat, int width, int height);
 
 std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(
