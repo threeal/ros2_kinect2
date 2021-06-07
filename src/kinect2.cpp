@@ -59,7 +59,7 @@ Kinect2::Kinect2(const Kinect2::Options & options)
     throw std::runtime_error("no device found");
   }
 
-  pipeline = new libfreenect2::CpuPacketPipeline();
+  pipeline = new libfreenect2::OpenGLPacketPipeline();
   device = freenect2.openDevice(freenect2.getDefaultDeviceSerialNumber(), pipeline);
 
   device->setColorFrameListener(this);
@@ -100,6 +100,10 @@ bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * f
     case libfreenect2::Frame::Color: {
         if (rgb_image_publisher) {
           auto color_image = rgb_frame_to_image(frame, options.width, options.height);
+
+          color_image->header.stamp = now();
+          color_image->header.frame_id = "camera";
+
           rgb_image_publisher->publish(*color_image);
         }
 
@@ -109,6 +113,10 @@ bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * f
     case libfreenect2::Frame::Ir: {
         if (depth_image_publisher) {
           auto ir_image = ir_frame_to_image(frame, options.width, options.height);
+
+          ir_image->header.stamp = now();
+          ir_image->header.frame_id = "camera";
+
           depth_image_publisher->publish(*ir_image);
         }
 
