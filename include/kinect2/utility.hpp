@@ -22,6 +22,7 @@
 #define KINECT2__UTILITY_HPP_
 
 #include <libfreenect2/frame_listener.hpp>
+#include <opencv2/core.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
 #include <memory>
@@ -30,9 +31,17 @@
 namespace kinect2
 {
 
-std::shared_ptr<sensor_msgs::msg::Image> frame_info_to_image(libfreenect2::Frame * frame);
-std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(libfreenect2::Frame * frame);
-std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(libfreenect2::Frame * frame);
+cv::Mat frame_to_mat(libfreenect2::Frame * frame, const int & type = CV_8UC3);
+std::shared_ptr<sensor_msgs::msg::Image> mat_to_image(cv::Mat mat);
+
+cv::Mat crop_mat(cv::Mat mat, const int & width, const int & height);
+cv::Mat resize_mat(cv::Mat mat, int width, int height);
+
+std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(
+  libfreenect2::Frame * frame, const int & width, const int & height);
+
+std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(
+  libfreenect2::Frame * frame, const int & width, const int & height);
 
 }  // namespace kinect2
 

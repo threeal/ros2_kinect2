@@ -19,53 +19,102 @@
 // THE SOFTWARE.
 
 #include <kinect2/utility.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 #include <sensor_msgs/image_encodings.hpp>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 
 namespace kinect2
 {
 
-std::shared_ptr<sensor_msgs::msg::Image> frame_info_to_image(libfreenect2::Frame * frame)
+cv::Mat frame_to_mat(libfreenect2::Frame * frame, const int & type)
+{
+  cv::Mat mat(frame->height, frame->width, type);
+
+  auto size = frame->height * frame->width * frame->bytes_per_pixel;
+  std::copy_n(frame->data, size, mat.data);
+
+  return mat;
+}
+
+std::shared_ptr<sensor_msgs::msg::Image> mat_to_image(cv::Mat mat)
 {
   auto image = std::make_shared<sensor_msgs::msg::Image>();
 
-  image->height = frame->height;
-  image->width = frame->width;
+  image->height = mat.rows;
+  image->width = mat.cols;
+  image->step = mat.step;
+
+  image->encoding = cv::typeToString(mat.type());
+
+  image->data.resize(image->step * image->height);
+  std::copy(mat.datastart, mat.dataend, image->data.begin());
 
   return image;
 }
 
-std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(libfreenect2::Frame * frame)
+cv::Mat crop_mat(cv::Mat mat, const int & width, const int & height)
 {
-  auto image = frame_info_to_image(frame);
+  cv::Rect roi;
+  roi.x = (mat.cols - width) / 2;
+  roi.y = (mat.rows - height) / 2;
+  roi.width = width;
+  roi.height = height;
 
-  image->encoding = sensor_msgs::image_encodings::BGRA8;
-  image->step = frame->width * frame->bytes_per_pixel;
-
-  // Copy image data
-  image->data.resize(image->step * image->height);
-  std::copy_n(frame->data, image->step * image->height, image->data.begin());
-
-  return image;
+  return mat(roi);
 }
 
-std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(libfreenect2::Frame * frame)
+cv::Mat resize_mat(cv::Mat mat, int width, int height)
 {
-  auto image = frame_info_to_image(frame);
-
-  image->encoding = sensor_msgs::image_encodings::MONO8;
-  image->step = frame->width;
-
-  // convert 4 bytes pixel into 1 byte pixel
-  image->data.resize(image->step * image->height);
-  for (size_t i = 0; i < image->data.size(); ++i) {
-    auto step = i * frame->bytes_per_pixel;
-
-    uint32_t * value = reinterpret_cast<uint32_t *>(frame->data + step);
-    image->data[i] = (*value / (1024 * 512));
+  if (width <= 0 && height <= 0) {
+    return mat;
   }
+
+  if (width <= 0) {
+    width = (mat.cols * height) / mat.rows;
+  }
+
+  if (height <= 0) {
+    height = (mat.rows * width) / mat.cols;
+  }
+
+  // Crop image to keep the aspect ratio
+  if (static_cast<double>(width) / height < static_cast<double>(mat.cols) / mat.rows) {
+    mat = crop_mat(mat, (width * mat.rows) / height, mat.rows);
+  } else {
+    mat = crop_mat(mat, mat.cols, (height * mat.cols) / width);
+  }
+
+  cv::resize(mat, mat, cv::Size(width, height));
+
+  return mat;
+}
+
+std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(
+  libfreenect2::Frame * frame, const int & width, const int & height)
+{
+  auto mat = frame_to_mat(frame, CV_8UC4);
+  auto resized_mat = resize_mat(mat, width, height);
+
+  auto image = mat_to_image(resized_mat);
+  image->encoding = sensor_msgs::image_encodings::BGRA8;
+
+  return image;
+}
+
+std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(
+  libfreenect2::Frame * frame, const int & width, const int & height)
+{
+  auto mat = frame_to_mat(frame, CV_32FC1);
+  auto resized_mat = resize_mat(mat, width, height);
+
+  resized_mat.convertTo(resized_mat, CV_8UC1, 256.0 / 65535.0);
+
+  auto image = mat_to_image(resized_mat);
+  image->encoding = sensor_msgs::image_encodings::MONO8;
 
   return image;
 }

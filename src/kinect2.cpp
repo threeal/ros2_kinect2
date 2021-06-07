@@ -28,7 +28,9 @@ namespace kinect2
 
 Kinect2::Options::Options()
 : enable_rgb(false),
-  enable_depth(false)
+  enable_depth(false),
+  width(-1),
+  height(-1)
 {
 }
 
@@ -49,7 +51,8 @@ unsigned int Kinect2::Options::get_frame_types() const
 
 Kinect2::Kinect2(const Kinect2::Options & options)
 : rclcpp::Node("kinect2", options),
-  SyncMultiFrameListener(options.get_frame_types())
+  SyncMultiFrameListener(options.get_frame_types()),
+  options(options)
 {
   // Check available devices
   if (freenect2.enumerateDevices() <= 0) {
@@ -96,7 +99,7 @@ bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * f
   switch (type) {
     case libfreenect2::Frame::Color: {
         if (rgb_image_publisher) {
-          auto color_image = rgb_frame_to_image(frame);
+          auto color_image = rgb_frame_to_image(frame, options.width, options.height);
           rgb_image_publisher->publish(*color_image);
         }
 
@@ -105,7 +108,7 @@ bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * f
 
     case libfreenect2::Frame::Ir: {
         if (depth_image_publisher) {
-          auto ir_image = ir_frame_to_image(frame);
+          auto ir_image = ir_frame_to_image(frame, options.width, options.height);
           depth_image_publisher->publish(*ir_image);
         }
 
