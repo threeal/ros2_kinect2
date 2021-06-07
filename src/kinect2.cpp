@@ -59,7 +59,7 @@ Kinect2::Kinect2(const Kinect2::Options & options)
     throw std::runtime_error("no device found");
   }
 
-  pipeline = new libfreenect2::CpuPacketPipeline();
+  pipeline = new libfreenect2::OpenGLPacketPipeline();
   device = freenect2.openDevice(freenect2.getDefaultDeviceSerialNumber(), pipeline);
 
   device->setColorFrameListener(this);
