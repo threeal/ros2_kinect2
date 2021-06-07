@@ -20,9 +20,10 @@
 
 #include <kinect2/utility.hpp>
 #include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 #include <sensor_msgs/image_encodings.hpp>
 
-#include <iostream>
+#include <algorithm>
 #include <memory>
 #include <string>
 
@@ -55,22 +56,46 @@ std::shared_ptr<sensor_msgs::msg::Image> mat_to_image(cv::Mat mat)
   return image;
 }
 
-std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(libfreenect2::Frame * frame)
+cv::Mat resize_mat(cv::Mat mat, int width, int height)
+{
+  if (width <= 0 && height <= 0) {
+    return mat;
+  }
+
+  if (width <= 0) {
+    width = (mat.cols * height) / mat.rows;
+  }
+
+  if (height <= 0) {
+    height = (mat.rows * width) / mat.cols;
+  }
+
+  cv::resize(mat, mat, cv::Size(width, height));
+
+  return mat;
+}
+
+std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(
+  libfreenect2::Frame * frame, const int & width, const int & height)
 {
   auto mat = frame_to_mat(frame, CV_8UC4);
+  auto resized_mat = resize_mat(mat, width, height);
 
-  auto image =  mat_to_image(mat);
+  auto image = mat_to_image(resized_mat);
   image->encoding = sensor_msgs::image_encodings::BGRA8;
 
   return image;
 }
 
-std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(libfreenect2::Frame * frame)
+std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(
+  libfreenect2::Frame * frame, const int & width, const int & height)
 {
   auto mat = frame_to_mat(frame, CV_32FC1);
-  mat.convertTo(mat, CV_8UC1, 256.0 / 65535.0);
+  auto resized_mat = resize_mat(mat, width, height);
 
-  auto image = mat_to_image(mat);
+  resized_mat.convertTo(resized_mat, CV_8UC1, 256.0 / 65535.0);
+
+  auto image = mat_to_image(resized_mat);
   image->encoding = sensor_msgs::image_encodings::MONO8;
 
   return image;

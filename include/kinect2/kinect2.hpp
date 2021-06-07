@@ -40,6 +40,9 @@ public:
 
     bool enable_rgb;
     bool enable_depth;
+
+    int width;
+    int height;
   };
 
   explicit Kinect2(const Options & options = Options());
@@ -55,6 +58,8 @@ private:
 
   libfreenect2::PacketPipeline * pipeline;
   libfreenect2::Freenect2Device * device;
+
+  Options options;
 };
 
 }  // namespace kinect2
