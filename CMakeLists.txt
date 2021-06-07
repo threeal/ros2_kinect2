@@ -17,6 +17,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(argparse REQUIRED)
 find_package(freenect2 REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
@@ -31,7 +32,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>)
 
 ament_target_dependencies(${PROJECT_NAME}
-  argparse freenect2 rclcpp sensor_msgs)
+  argparse freenect2 OpenCV rclcpp sensor_msgs)
 
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
@@ -57,6 +58,6 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_export_dependencies(argparse freenect2 rclcpp sensor_msgs)
+ament_export_dependencies(argparse freenect2 OpenCV rclcpp sensor_msgs)
 
 ament_package()
