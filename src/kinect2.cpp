@@ -89,6 +89,12 @@ Kinect2::~Kinect2()
   if (device) {
     device->stop();
     device->close();
+
+    delete device;
+  }
+
+  if (pipeline) {
+    delete pipeline;
   }
 }
 
