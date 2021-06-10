@@ -111,7 +111,7 @@ std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(
   auto mat = frame_to_mat(frame, CV_32FC1);
   auto resized_mat = resize_mat(mat, width, height);
 
-  resized_mat.convertTo(resized_mat, CV_8UC1, 256.0 / 65535.0);
+  resized_mat.convertTo(resized_mat, CV_8UC1, -256.0 / 65535.0, 256.0);
 
   auto image = mat_to_image(resized_mat);
   image->encoding = sensor_msgs::image_encodings::MONO8;
