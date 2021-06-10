@@ -116,11 +116,11 @@ bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * f
           color_image->header.frame_id = "camera";
 
           rgb_image_publisher->publish(*color_image);
-        }
 
-        if (rgb_camera_info_publisher) {
-          sensor_msgs::msg::CameraInfo camera_info;
-          rgb_camera_info_publisher->publish(camera_info);
+          if (rgb_camera_info_publisher) {
+            auto camera_info = camera_info_from_image(*color_image);
+            rgb_camera_info_publisher->publish(camera_info);
+          }
         }
 
         break;
@@ -134,11 +134,11 @@ bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * f
           ir_image->header.frame_id = "camera";
 
           depth_image_publisher->publish(*ir_image);
-        }
 
-        if (depth_camera_info_publisher) {
-          sensor_msgs::msg::CameraInfo camera_info;
-          depth_camera_info_publisher->publish(camera_info);
+          if (depth_camera_info_publisher) {
+            auto camera_info = camera_info_from_image(*ir_image);
+            depth_camera_info_publisher->publish(camera_info);
+          }
         }
 
         break;

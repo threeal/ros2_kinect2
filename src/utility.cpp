@@ -119,4 +119,15 @@ std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(
   return image;
 }
 
+sensor_msgs::msg::CameraInfo camera_info_from_image(const sensor_msgs::msg::Image & image)
+{
+  sensor_msgs::msg::CameraInfo camera_info;
+
+  camera_info.header = image.header;
+  camera_info.height = image.height;
+  camera_info.width = image.width;
+
+  return camera_info;
+}
+
 }  // namespace kinect2

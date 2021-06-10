@@ -23,6 +23,7 @@
 
 #include <libfreenect2/frame_listener.hpp>
 #include <opencv2/core.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
 #include <memory>
@@ -42,6 +43,8 @@ std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(
 
 std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(
   libfreenect2::Frame * frame, const int & width, const int & height);
+
+sensor_msgs::msg::CameraInfo camera_info_from_image(const sensor_msgs::msg::Image & image);
 
 }  // namespace kinect2
 
