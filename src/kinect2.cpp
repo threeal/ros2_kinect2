@@ -75,11 +75,16 @@ Kinect2::Kinect2(const Kinect2::Options & options)
 
   if (options.enable_rgb) {
     rgb_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/image_raw", 10);
+    rgb_camera_info_publisher = create_publisher<sensor_msgs::msg::CameraInfo>(
+      "/kinect2/camera_info", 10);
   }
 
   if (options.enable_depth) {
     depth_image_publisher = create_publisher<sensor_msgs::msg::Image>(
       "/kinect2/depth/image_raw", 10);
+
+    depth_camera_info_publisher = create_publisher<sensor_msgs::msg::CameraInfo>(
+      "/kinect2/depth/camera_info", 10);
   }
 }
 
@@ -113,6 +118,11 @@ bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * f
           rgb_image_publisher->publish(*color_image);
         }
 
+        if (rgb_camera_info_publisher) {
+          sensor_msgs::msg::CameraInfo camera_info;
+          rgb_camera_info_publisher->publish(camera_info);
+        }
+
         break;
       }
 
@@ -124,6 +134,11 @@ bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * f
           ir_image->header.frame_id = "camera";
 
           depth_image_publisher->publish(*ir_image);
+        }
+
+        if (depth_camera_info_publisher) {
+          sensor_msgs::msg::CameraInfo camera_info;
+          depth_camera_info_publisher->publish(camera_info);
         }
 
         break;
