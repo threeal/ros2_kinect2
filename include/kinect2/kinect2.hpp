@@ -24,6 +24,7 @@
 #include <libfreenect2/libfreenect2.hpp>
 #include <libfreenect2/frame_listener_impl.h>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
 namespace kinect2
@@ -52,7 +53,10 @@ public:
 
 private:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr rgb_image_publisher;
+  rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr rgb_camera_info_publisher;
+
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr depth_image_publisher;
+  rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr depth_camera_info_publisher;
 
   libfreenect2::Freenect2 freenect2;
 

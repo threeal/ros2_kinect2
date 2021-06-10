@@ -75,11 +75,16 @@ Kinect2::Kinect2(const Kinect2::Options & options)
 
   if (options.enable_rgb) {
     rgb_image_publisher = create_publisher<sensor_msgs::msg::Image>("/kinect2/image_raw", 10);
+    rgb_camera_info_publisher = create_publisher<sensor_msgs::msg::CameraInfo>(
+      "/kinect2/camera_info", 10);
   }
 
   if (options.enable_depth) {
     depth_image_publisher = create_publisher<sensor_msgs::msg::Image>(
       "/kinect2/depth/image_raw", 10);
+
+    depth_camera_info_publisher = create_publisher<sensor_msgs::msg::CameraInfo>(
+      "/kinect2/depth/camera_info", 10);
   }
 }
 
@@ -111,6 +116,26 @@ bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * f
           color_image->header.frame_id = "camera";
 
           rgb_image_publisher->publish(*color_image);
+
+          if (rgb_camera_info_publisher) {
+            auto camera_info = camera_info_from_image(*color_image);
+
+            auto param = device->getColorCameraParams();
+
+            camera_info.k = {
+              param.fx, 0, param.cx,
+              0, param.fy, param.cy,
+              0, 0, 1
+            };
+
+            camera_info.p = {
+              param.fx, 0, param.cx, 0,
+              0, param.fy, param.cy, 0,
+              0, 0, 1, 0
+            };
+
+            rgb_camera_info_publisher->publish(camera_info);
+          }
         }
 
         break;
@@ -124,6 +149,29 @@ bool Kinect2::onNewFrame(libfreenect2::Frame::Type type, libfreenect2::Frame * f
           ir_image->header.frame_id = "camera";
 
           depth_image_publisher->publish(*ir_image);
+
+          if (depth_camera_info_publisher) {
+            auto camera_info = camera_info_from_image(*ir_image);
+
+            auto param = device->getIrCameraParams();
+
+            camera_info.distortion_model = "plum_bob";
+            camera_info.d = {param.k1, param.k2, param.p1, param.p2, param.k3};
+
+            camera_info.k = {
+              param.fx, 0, param.cx,
+              0, param.fy, param.cy,
+              0, 0, 1
+            };
+
+            camera_info.p = {
+              param.fx, 0, param.cx, 0,
+              0, param.fy, param.cy, 0,
+              0, 0, 1, 0
+            };
+
+            depth_camera_info_publisher->publish(camera_info);
+          }
         }
 
         break;
