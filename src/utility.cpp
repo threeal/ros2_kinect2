@@ -99,6 +99,8 @@ std::shared_ptr<sensor_msgs::msg::Image> rgb_frame_to_image(
   auto mat = frame_to_mat(frame, CV_8UC4);
   auto resized_mat = resize_mat(mat, width, height);
 
+  cv::flip(resized_mat, resized_mat, 1);
+
   auto image = mat_to_image(resized_mat);
   image->encoding = sensor_msgs::image_encodings::BGRA8;
 
@@ -112,6 +114,8 @@ std::shared_ptr<sensor_msgs::msg::Image> ir_frame_to_image(
   auto resized_mat = resize_mat(mat, width, height);
 
   resized_mat.convertTo(resized_mat, CV_8UC1, -256.0 / 65535.0, 256.0);
+
+  cv::flip(resized_mat, resized_mat, 1);
 
   auto image = mat_to_image(resized_mat);
   image->encoding = sensor_msgs::image_encodings::MONO8;
